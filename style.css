@@ -78,7 +78,7 @@ ul { list-style: none; }
 .stat-box h3 { font-size: 1.8rem; margin: 5px 0; }
 .stat-box span { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
 
-/* MAP FIX (LAYOUT PETA DIPASTIKAN PAS & PROPOSIONAL) */
+/* MAP FIX */
 .map-frame { width: 100%; height: 500px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border); background: var(--color-light-gray); }
 #map { height: 100%; width: 100%; z-index: 1; }
 
@@ -121,20 +121,48 @@ input:focus, select:focus { border-color: var(--color-brand); background: var(--
 .draft-body p { color: var(--color-gray); font-size: 0.9rem; margin-bottom: 15px; line-height: 1.5; }
 .draft-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; border-top: 1px solid var(--color-border); padding-top: 15px; }
 
-/* ABOUT & TEAM */
+/* ABOUT & TEAM (RESPONSIF & CENTER UNTUK 5 ANGGOTA) */
 .about-card { max-width: 900px; margin: 0 auto; }
 .about-content { font-size: 1.05rem; line-height: 1.7; text-align: center; color: #4b5563; margin-bottom: 40px; padding: 0 20px; }
 .team-title { margin-bottom: 40px; border-bottom: 2px solid var(--color-light-gray); padding-bottom: 10px; }
 .team-leader-section { display: flex; justify-content: center; margin-bottom: 40px; }
-.team-leader-section .team-member { transform: scale(1.1); box-shadow: var(--shadow-md); padding: 15px; border-radius: var(--radius-lg); background: white; border: 1px solid var(--color-border); }
+.team-leader-section .team-member { transform: scale(1.1); box-shadow: var(--shadow-md); padding: 15px; border-radius: var(--radius-lg); background: white; border: 1px solid var(--color-border); width: 150px; }
 .team-leader-section h4 { color: var(--color-brand-dark); font-size: 1.1rem; }
 .team-leader-section .role { font-weight: 600; color: var(--color-brand); }
-.members-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; justify-items: center; }
-.team-member { text-align: center; width: 100%; max-width: 180px; }
-.placeholder-3x4 { width: 100%; aspect-ratio: 3 / 4; background: var(--color-light-gray); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #9ca3af; margin-bottom: 15px; overflow: hidden; border: 2px solid var(--color-border); }
-.placeholder-3x4 img { width: 100%; height: 100%; object-fit: cover; }
-.team-member h4 { font-size: 0.95rem; margin-bottom: 4px; }
-.team-member .role { font-size: 0.8rem; color: var(--color-gray); }
+
+.members-grid { 
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 20px; 
+    width: 100%; 
+}
+.team-member { 
+    text-align: center; 
+    width: 135px; 
+    flex: 0 1 135px;
+}
+.placeholder-3x4 { 
+    width: 100%; 
+    aspect-ratio: 3 / 4; 
+    background: var(--color-light-gray); 
+    border-radius: var(--radius-md); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 2.5rem; 
+    color: #9ca3af; 
+    margin-bottom: 8px; 
+    overflow: hidden; 
+    border: 2px solid var(--color-border); 
+}
+.placeholder-3x4 img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}
+.team-member h4 { font-size: 0.85rem; margin-bottom: 2px; }
+.team-member .role { font-size: 0.75rem; color: var(--color-gray); }
 
 /* ADMIN DASHBOARD */
 .login-wrapper { display: flex; justify-content: center; align-items: center; min-height: 60vh; }
@@ -185,7 +213,7 @@ input:focus, select:focus { border-color: var(--color-brand); background: var(--
 
 @media (max-width: 900px) {
     .footer-container { grid-template-columns: 1fr; gap: 30px; }
-    .members-grid { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+    .team-member { width: 120px; flex: 0 1 120px; }
 }
 
 @media (max-width: 768px) {
@@ -200,12 +228,4 @@ input:focus, select:focus { border-color: var(--color-brand); background: var(--
     .table-header-tools { flex-direction: column; align-items: stretch; }
     .tools-right { flex-direction: column; }
     .admin-header { flex-direction: column; align-items: stretch; }
-}
-
-/* Update styling members-grid agar otomatis menyesuaikan 5 anggota tim */
-.members-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; justify-items: center; }
-
-@media (max-width: 900px) {
-    .footer-container { grid-template-columns: 1fr; gap: 30px; }
-    .members-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
 }
