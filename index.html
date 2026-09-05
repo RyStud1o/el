@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoLens - Sistem Monitoring Keanekaragaman Hayati</title>
+    <link rel="icon" type="image/png" href="logo-el.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- 1. SPLASH SCREEN / LOADING 5 DETIK -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo-img">
+                <img src="logo-el.png" alt="EcoLens Logo">
+            </div>
+            <h2>EcoLens</h2>
+            <p>Sistem Keanekaragaman Hayati...</p>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- NAVBAR ECOLENS -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="logo-box-img">
+                    <img src="logo-el.png" alt="EcoLens">
+                </div>
+                EcoLens
+            </div>
+            
+            <button class="menu-toggle" id="mobileMenuBtn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li class="active" onclick="switchTab('home-tab', this)"><i class="fa-solid fa-house"></i> Beranda</li>
+                    <li onclick="switchTab('form-tab', this)"><i class="fa-solid fa-plus-circle"></i> Pendataan</li>
+                    <li onclick="switchTab('draft-tab', this)"><i class="fa-solid fa-box-archive"></i> Draft (<span id="draftCount">0</span>)</li>
+                    <li onclick="switchTab('about-tab', this)"><i class="fa-solid fa-circle-info"></i> Tentang</li>
+                    <li id="nav-admin" class="btn-login-nav" onclick="switchTab('admin-login-tab', this)"><i class="fa-solid fa-lock"></i> Admin</li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-wrapper">
+        <!-- DASHBOARD AWAL (BERANDA) -->
+        <section id="home-tab" class="tab-content active">
+            <div class="hero-section">
+                <h1>Pantau, Catat, dan Lestarikan.</h1>
+                <p>Platform untuk pemetaan keanekaragaman hayati secara <b>real-time</b> demi mendukung keberlanjutan ekosistem (Sustainability).</p>
+                <div class="hero-stats">
+                    <div class="stat-box">
+                        <i class="fa-solid fa-seedling"></i>
+                        <h3 id="publicFlora">0</h3>
+                        <span>Flora Terdata</span>
+                    </div>
+                    <div class="stat-box">
+                        <i class="fa-solid fa-paw"></i>
+                        <h3 id="publicFauna">0</h3>
+                        <span>Fauna Terdata</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card map-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-earth-asia"></i> Peta Persebaran Global</h2>
+                    <span class="badge">Live Data</span>
+                </div>
+                <div class="map-frame">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MENU PENDATAAN (FORM) -->
+        <section id="form-tab" class="tab-content">
+            <div class="card form-container">
+                <div class="card-header">
+                    <h2 id="formTitle"><i class="fa-solid fa-clipboard-list"></i> Form Pendataan</h2>
+                    <p class="subtitle">Kirimkan temuan Anda dengan data yang akurat.</p>
+                </div>
+                
+                <form id="bioForm">
+                    <input type="hidden" id="editId" value="">
+                    
+                    <div class="form-grid-2">
+                        <div class="input-group">
+                            <label>Kategori Spesies</label>
+                            <select id="kategori" required>
+                                <option value="" disabled selected>Pilih kategori...</option>
+                                <option value="Flora">🌿 Flora (Tumbuhan)</option>
+                                <option value="Fauna">🐾 Fauna (Hewan)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Kondisi Habitat</label>
+                            <select id="habitat" required>
+                                <option value="" disabled selected>Pilih kondisi...</option>
+                                <option value="Sangat Baik">Sangat Baik (Alami / Terjaga)</option>
+                                <option value="Sedang">Sedang (Mulai Terfragmentasi)</option>
+                                <option value="Buruk">Buruk (Tercemar / Rusak)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Nama Spesies (Lokal / Ilmiah)</label>
+                        <input type="text" id="namaSpesies" placeholder="Contoh: Bekantan (Nasalis larvatus)" required>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="input-group">
+                            <label>Waktu Pencatatan (WITA)</label>
+                            <input type="datetime-local" id="tanggal" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Jumlah Individu / Koloni</label>
+                            <input type="number" id="jumlah" min="1" value="1" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Koordinat Lokasi (GPS)</label>
+                        <div class="flex-input">
+                            <input type="text" id="lokasi" placeholder="Koordinat akan otomatis terisi" readonly required>
+                            <button type="button" id="btnLokasi" class="btn btn-outline"><i class="fa-solid fa-location-crosshairs"></i> Dapatkan</button>
+                        </div>
+                    </div>
+
+                    <div class="input-group photo-upload-group">
+                        <label>Foto Pendukung (Bisa langsung dari Kamera)</label>
+                        <input type="file" id="foto" accept="image/*" capture="environment">
+                        <div class="photo-preview-box" id="previewBox" style="display: none;">
+                            <img id="previewFoto" src="" alt="Preview">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="btnBatalEdit" class="btn btn-danger" style="display:none;">Batal Edit</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa-solid fa-floppy-disk"></i> Simpan ke Draft (Offline)</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- BAGIAN DRAFT -->
+        <section id="draft-tab" class="tab-content">
+            <div class="draft-header-section">
+                <div>
+                    <h2><i class="fa-solid fa-cloud-arrow-down"></i> Data Tersimpan (Lokal)</h2>
+                    <p class="subtitle">Data ini aman di perangkat Anda. Upload saat terhubung ke internet.</p>
+                </div>
+                <button id="btnUpload" class="btn btn-success" style="display:none;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sinkronisasi ke Server
+                </button>
+            </div>
+            <div id="draftList" class="data-grid"></div>
+        </section>
+
+        <!-- HALAMAN TENTANG (ABOUT) -->
+        <section id="about-tab" class="tab-content">
+            <div class="card about-card">
+                <div class="about-header text-center">
+                    <div class="logo-box-img large-logo-img">
+                        <img src="logo-el.png" alt="EcoLens Logo">
+                    </div>
+                    <h2>Tentang EcoLens</h2>
+                    <!--DI EDIT-->
+                    <p class="lead"></p>
+                </div>
+                <div class="about-content">
+                    <p><b>EcoLens</b> adalah platform aplikasi monitoring keanekaragaman hayati (Biodiversity Monitoring App) yang dirancang untuk mendokumentasikan, memetakan, dan menganalisis sebaran flora serta fauna di lingkungan sekitar. Aplikasi ini mendukung pendataan secara <i>offline-first</i>, terintegrasi dengan pemetaan spasial (GIS), dan visualisasi data <i>real-time</i>.</p>
+                </div>
+                
+                <h3 class="team-title text-center">Tim Pengembang (Developer Team)</h3>
+
+                <!-- LEAD DEVELOPER (Di Atas Tengah) -->
+                <div class="team-leader-section">
+                    <div class="team-member leader">
+                        <div class="member-photo placeholder-3x4">
+                            <img src="jepry.jpg" alt="Muhammad Jepry">
+                        </div>
+                        <h4>Muhammad Jepry</h4>
+                        <span class="role">Ketua Tim</span>
+                    </div>
+                </div>
+
+                <!-- ANGGOTA TIM (Sejajar di Bawah) -->
+                <div class="team-grid members-grid">
+                    <div class="team-member">
+                        <div class="member-photo placeholder-3x4">
+                            <img src="asmaul.jpg" alt="Asmaul Husna">
+                        </div>
+                        <h4>Asmaul Husna</h4>
+                        <span class="role">Anggota Tim</span>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-photo placeholder-3x4">
+                            <img src="dewi.jpg" alt="Dewi Indah Nopiana F.">
+                        </div>
+                        <h4>Dewi Indah Nopiana F.</h4>
+                        <span class="role">Anggota Tim</span>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-photo placeholder-3x4">
+                            <img src="hidayah.jpg" alt="Hidayah Putri R.">
+                        </div>
+                        <h4>Hidayah Putri R.</h4>
+                        <span class="role">Anggota Tim</span>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-photo placeholder-3x4">
+                            <img src="syafaraz.jpg" alt="Muhammad Syafaraz">
+                        </div>
+                        <h4>Muhammad Syafaraz</h4>
+                        <span class="role">Anggota Tim</span>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-photo placeholder-3x4">
+                            <img src="jamiatunnisa.jpg" alt="Jamiatunnisa">
+                        </div>
+                        <h4>Jamiatunnisa</h4>
+                        <span class="role">Anggota Tim</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOGIN ADMIN -->
+        <section id="admin-login-tab" class="tab-content">
+            <div class="login-wrapper">
+                <div class="card login-card">
+                    <div class="login-icon"><i class="fa-solid fa-fingerprint"></i></div>
+                    <h2>Admin Login</h2>
+                    <p class="subtitle">Masuk sebagai Administrator.</p>
+                    <div class="input-group">
+                        <input type="email" id="email" placeholder="Alamat Email">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder="Kata Sandi">
+                    </div>
+                    <button id="btnLogin" class="btn btn-primary w-100">Verifikasi & Masuk</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD ADMIN PENGOLAHAN DATA -->
+        <section id="admin-dashboard-tab" class="tab-content">
+            <div class="admin-header">
+                <div>
+                    <h2><i class="fa-solid fa-chart-line"></i> Command Center</h2>
+                    <p class="subtitle">Pusat Analisis & Pengolahan Data EcoLens</p>
+                </div>
+                <button id="btnLogout" class="btn btn-danger"><i class="fa-solid fa-power-off"></i> Akhiri Sesi</button>
+            </div>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon flora"><i class="fa-solid fa-seedling"></i></div>
+                    <div class="kpi-data"><p>Total Flora</p><h3 id="adminTotFlora">0</h3></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon fauna"><i class="fa-solid fa-paw"></i></div>
+                    <div class="kpi-data"><p>Total Fauna</p><h3 id="adminTotFauna">0</h3></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon total"><i class="fa-solid fa-database"></i></div>
+                    <div class="kpi-data"><p>Total Entri Data</p><h3 id="adminTotData">0</h3></div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="card chart-box">
+                    <h3>Komposisi Biodiversitas</h3>
+                    <canvas id="kategoriChart"></canvas>
+                </div>
+                <div class="card chart-box">
+                    <h3>Status Integritas Habitat</h3>
+                    <canvas id="habitatChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="table-header-tools">
+                    <h3><i class="fa-solid fa-table"></i> Manajemen Basis Data</h3>
+                    <div class="tools-right">
+                        <input type="text" id="searchInput" placeholder="Cari spesies atau lokasi..." class="search-bar">
+                        <button id="btnExport" class="btn btn-success"><i class="fa-solid fa-file-csv"></i> Unduh CSV</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="dataTable" class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Spesies</th>
+                                <th>Waktu (WITA)</th>
+                                <th>Lokasi (GPS)</th>
+                                <th>Populasi</th>
+                                <th>Habitat</th>
+                                <th>Eviden</th>
+                                <th>Aksi Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FAT FOOTER -->
+    <footer class="fat-footer">
+        <div class="footer-container">
+            <div class="footer-col brand-col">
+                <h3><img src="logo-el.png" alt="EcoLens" class="footer-logo-img"> EcoLens</h3>
+                <p>Mendukung pelestarian alam melalui teknologi informasi.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navigasi Cepat</h4>
+                <ul>
+                    <li onclick="switchTab('home-tab')">Beranda Utama</li>
+                    <li onclick="switchTab('form-tab')">Mulai Pendataan</li>
+                    <li onclick="switchTab('about-tab')">Tentang Proyek</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Proyek Akademik</h4>
+                <p><i class="fa-solid fa-graduation-cap"></i> Mata Kuliah Dasar Rekayasa Bioproses.</p>
+                <p><i class="fa-solid fa-code"></i> Dikembangkan oleh Tim EcoLens (2026).</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 EcoLens App - Hak Cipta Dilindungi.</p>
+        </div>
+    </footer>
+
+    <!-- POPUP MODAL PROFESIONAL -->
+    <div id="customModal" class="modal-backdrop">
+        <div class="modal-content">
+            <div id="modalIcon" class="modal-icon"></div>
+            <h3 id="modalTitle">Judul Modal</h3>
+            <p id="modalMessage">Pesan deskripsi modal.</p>
+            <div id="modalActions" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary w-100" onclick="closeModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
